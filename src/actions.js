@@ -22,6 +22,16 @@ function simpleCommandAction(name, command) {
 	}
 }
 
+function methodAction(name, method, ...args) {
+	return {
+		name,
+		options: [],
+		callback: async (_event, _context) => {
+			await this[method](...args)
+		},
+	}
+}
+
 function sourceAction(name, input) {
 	return {
 		name,
@@ -325,19 +335,17 @@ export default function (self) {
 			},
 		},
 
-		repeat_off: simpleCommandAction.call(self, 'Repeat: Off', 'setPlayerCmd:loopmode:0'),
-		repeat_one: simpleCommandAction.call(self, 'Repeat: One', 'setPlayerCmd:loopmode:1'),
-		repeat_all: simpleCommandAction.call(self, 'Repeat: All', 'setPlayerCmd:loopmode:4'),
-		shuffle_on: simpleCommandAction.call(self, 'Shuffle: On', 'setPlayerCmd:loopmode:2'),
-		shuffle_off: simpleCommandAction.call(self, 'Shuffle: Off', 'setPlayerCmd:loopmode:0'),
+		repeat_off: methodAction.call(self, 'Repeat: Off', 'setRepeatMode', 'off'),
+		repeat_one: methodAction.call(self, 'Repeat: One', 'setRepeatMode', 'one'),
+		repeat_all: methodAction.call(self, 'Repeat: All', 'setRepeatMode', 'all'),
+		shuffle_on: methodAction.call(self, 'Shuffle: On', 'setShuffleMode', true),
+		shuffle_off: methodAction.call(self, 'Shuffle: Off', 'setShuffleMode', false),
 		repeat_cycle: {
 			name: 'Repeat/Shuffle: Cycle Mode',
 			description: 'Cycle through Repeat One, Repeat All, Shuffle, and Off',
 			options: [],
 			callback: async () => {
-				const current = String(self.state.player.loop ?? '0')
-				const nextMode = current === '1' ? '4' : current === '4' ? '2' : current === '2' || current === '3' ? '0' : '1'
-				await self.sendCommand(`setPlayerCmd:loopmode:${nextMode}`)
+				await self.cycleLoopMode()
 			},
 		},
 

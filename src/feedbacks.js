@@ -90,7 +90,7 @@ export default function (self) {
 					id: 'mode',
 					type: 'dropdown',
 					label: 'Loop mode',
-					default: '5',
+					default: '1',
 					choices: loopModeChoices,
 				},
 			],

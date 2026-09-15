@@ -9,14 +9,31 @@ const inputChoices = [
 	{ id: 'hdmi_arc', label: 'HDMI ARC' },
 ]
 
-const loopModeChoices = [
-	{ id: '0', label: 'Repeat Off / Sequence' },
-	{ id: '1', label: 'Repeat One' },
-	{ id: '2', label: 'Shuffle' },
-	{ id: '3', label: 'Shuffle Repeat' },
-	{ id: '4', label: 'Repeat All' },
-	{ id: '5', label: 'Repeat Single (legacy)' },
+// Loop mode packs shuffle and repeat into a single value. The pairings below are
+// taken verbatim from the WiiM HTTP API v1.2 documentation, which defines them
+// identically for setPlayerCmd:loopmode:n and for getPlayerStatus.loop.
+const loopModes = [
+	{ id: '0', shuffle: false, repeat: 'all', label: 'Repeat All' },
+	{ id: '1', shuffle: false, repeat: 'one', label: 'Repeat One' },
+	{ id: '2', shuffle: true, repeat: 'all', label: 'Shuffle + Repeat All' },
+	{ id: '3', shuffle: true, repeat: 'off', label: 'Shuffle' },
+	{ id: '4', shuffle: false, repeat: 'off', label: 'Off' },
+	{ id: '5', shuffle: true, repeat: 'one', label: 'Shuffle + Repeat One' },
 ]
+
+// Order presented by the "Cycle Mode" action: Repeat One, Repeat All, Shuffle, Off.
+const loopModeCycle = ['1', '0', '3', '4']
+
+const loopModeChoices = loopModes.map(({ id, label }) => ({ id, label }))
+
+function getLoopMode(id) {
+	return loopModes.find((mode) => mode.id === String(id ?? ''))
+}
+
+// Resolve the combined value for a desired shuffle/repeat pair.
+function findLoopModeId(shuffle, repeat) {
+	return loopModes.find((mode) => mode.shuffle === shuffle && mode.repeat === repeat)?.id
+}
 
 const eqPresetChoices = [
 	{ id: 'Flat', label: 'Flat' },
@@ -62,4 +79,14 @@ const sourceAliases = {
 	hdmi_arc: ['hdmi_arc', 'hdmi arc', 'arc'],
 }
 
-export { inputChoices, loopModeChoices, eqPresetChoices, playbackStatusChoices, sourceAliases }
+export {
+	inputChoices,
+	loopModes,
+	loopModeCycle,
+	loopModeChoices,
+	getLoopMode,
+	findLoopModeId,
+	eqPresetChoices,
+	playbackStatusChoices,
+	sourceAliases,
+}

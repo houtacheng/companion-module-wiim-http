@@ -6,7 +6,7 @@ import UpdateActions from './actions.js'
 import UpdateFeedbacks from './feedbacks.js'
 import UpdateVariableDefinitions from './variables.js'
 import UpdatePresets from './presets.js'
-import { inputChoices } from './choices.js'
+import { inputChoices, getLoopMode, findLoopModeId, loopModeCycle } from './choices.js'
 
 const DEFAULT_HTTP_PORT = 80
 const DEFAULT_HTTPS_PORT = 443
@@ -824,27 +824,35 @@ class ModuleInstance extends InstanceBase {
 	}
 
 	getLoopModeText(loopMode = String(this.state.player?.loop ?? '')) {
-		switch (String(loopMode)) {
-			case '0':
-				return 'Off'
-			case '1':
-				return 'Repeat One'
-			case '5':
-				return 'Repeat Single'
-			case '2':
-				return 'Shuffle'
-			case '3':
-				return 'Shuffle Repeat'
-			case '4':
-				return 'Repeat All'
-			default:
-				return String(loopMode || '')
-		}
+		return getLoopMode(loopMode)?.label ?? String(loopMode || '')
+	}
+
+	getCurrentLoopMode() {
+		return getLoopMode(this.state.player?.loop)
 	}
 
 	isShuffleMode() {
-		const loopMode = String(this.state.player?.loop ?? '')
-		return loopMode === '2' || loopMode === '3'
+		return this.getCurrentLoopMode()?.shuffle === true
+	}
+
+	// Shuffle and repeat are encoded in one value, so setting either has to carry
+	// the other across rather than clobbering it.
+	async setRepeatMode(repeat) {
+		const next = findLoopModeId(this.getCurrentLoopMode()?.shuffle === true, repeat)
+		if (next === undefined) return
+		await this.sendCommand(`setPlayerCmd:loopmode:${next}`)
+	}
+
+	async setShuffleMode(shuffle) {
+		const next = findLoopModeId(shuffle === true, this.getCurrentLoopMode()?.repeat ?? 'off')
+		if (next === undefined) return
+		await this.sendCommand(`setPlayerCmd:loopmode:${next}`)
+	}
+
+	// Unknown or unset modes land on the first entry of the cycle.
+	async cycleLoopMode() {
+		const index = loopModeCycle.indexOf(String(this.state.player?.loop ?? ''))
+		await this.sendCommand(`setPlayerCmd:loopmode:${loopModeCycle[(index + 1) % loopModeCycle.length]}`)
 	}
 
 	getSourceText() {
@@ -906,7 +914,7 @@ class ModuleInstance extends InstanceBase {
 
 	async handleAssistedRepeatOne() {
 		const playbackStatus = this.getPlaybackText()
-		const loopMode = String(this.state.player?.loop ?? '')
+		const repeatsOne = this.getCurrentLoopMode()?.repeat === 'one'
 		const currentUrl = this.getCurrentPlaybackUrl()
 		const position = this.toNumber(this.state.player?.curpos ?? this.state.player?.offset_pts)
 		const duration = this.toNumber(this.state.player?.totlen)
@@ -919,7 +927,7 @@ class ModuleInstance extends InstanceBase {
 
 		const shouldReplay =
 			this.config?.assistRepeatOne !== false &&
-			loopMode === '1' &&
+			repeatsOne &&
 			playbackStatus === 'stop' &&
 			this.state.lastPlaybackStatus === 'play' &&
 			this.state.lastPlaybackNearEnd &&
@@ -941,8 +949,8 @@ class ModuleInstance extends InstanceBase {
 	async handleAutoRandomNext() {
 		if (this.config?.autoRandomNext !== true) return
 
-		const loopMode = String(this.state.player?.loop ?? '')
-		if (loopMode === '1') return
+		// Repeat One is the device's own job; don't fight it by queueing something else.
+		if (this.getCurrentLoopMode()?.repeat === 'one') return
 
 		const playbackStatus = this.getPlaybackText()
 		const position = this.toNumber(this.state.player?.curpos ?? this.state.player?.offset_pts)
