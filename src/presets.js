@@ -97,7 +97,7 @@ export default function (self) {
 		stop: simplePreset('Stop', 'STOP', 'stop', {}, [playbackFeedback('stop', COLORS.red)], ['transport']),
 		toggle_play: simplePreset(
 			'Toggle Play/Pause',
-			'PLAY\\nPAUSE',
+			'PLAY\nPAUSE',
 			'toggle_play',
 			{},
 			[playbackFeedback('play', COLORS.green), playbackFeedback('pause', COLORS.yellow, COLORS.black)],
@@ -112,7 +112,7 @@ export default function (self) {
 			type: 'simple',
 			name: 'Encoder: Volume / Mute',
 			keywords: ['encoder', 'volume', 'mute', 'rotary'],
-			style: style('ENC VOL\\n$(this:volume)', COLORS.gray, COLORS.white, '14'),
+			style: style('ENC VOL\n$(this:volume)', COLORS.gray, COLORS.white, '14'),
 			steps: encoderStep(
 				[action('mute_toggle')],
 				[action('volume_down', { step: 2 })],
@@ -120,9 +120,9 @@ export default function (self) {
 			),
 			feedbacks: [muteFeedback()],
 		},
-		repeat_one: simplePreset('Repeat One', 'RPT\\nONE', 'repeat_one', {}, [loopFeedback('1')], ['repeat']),
-		repeat_all: simplePreset('Repeat All', 'RPT\\nALL', 'repeat_all', {}, [loopFeedback('4')], ['repeat']),
-		repeat_off: simplePreset('Repeat Off', 'RPT\\nOFF', 'repeat_off', {}, [loopFeedback('0', COLORS.gray)], ['repeat']),
+		repeat_one: simplePreset('Repeat One', 'RPT\nONE', 'repeat_one', {}, [loopFeedback('1')], ['repeat']),
+		repeat_all: simplePreset('Repeat All', 'RPT\nALL', 'repeat_all', {}, [loopFeedback('0')], ['repeat']),
+		repeat_off: simplePreset('Repeat Off', 'RPT\nOFF', 'repeat_off', {}, [loopFeedback('4', COLORS.gray)], ['repeat']),
 		repeat_cycle: {
 			type: 'simple',
 			name: 'Cycle Repeat / Shuffle',
@@ -131,9 +131,9 @@ export default function (self) {
 			steps: press('repeat_cycle'),
 			feedbacks: [
 				loopFeedback('1', COLORS.blue),
-				loopFeedback('4', COLORS.blue),
+				loopFeedback('0', COLORS.blue),
 				{ feedbackId: 'shuffle', options: {}, style: { bgcolor: COLORS.blue, color: COLORS.white } },
-				loopFeedback('0', COLORS.gray),
+				loopFeedback('4', COLORS.gray),
 			],
 		},
 		shuffle_on: simplePreset(
@@ -167,7 +167,7 @@ export default function (self) {
 			type: 'simple',
 			name: 'Encoder: Select Input Source',
 			keywords: ['encoder', 'source', 'input', 'rotary'],
-			style: style('ENC SRC\\n$(this:selected_source)', COLORS.gray, COLORS.white, '12'),
+			style: style('ENC SRC\n$(this:selected_source)', COLORS.gray, COLORS.white, '12'),
 			steps: encoderStep([], [action('switch_source_previous')], [action('switch_source_next')]),
 			feedbacks: [
 				inputFeedback('wifi'),
@@ -179,7 +179,7 @@ export default function (self) {
 		},
 		random_media_file: simplePreset(
 			'Random Media File',
-			'RANDOM\\nFILE',
+			'RANDOM\nFILE',
 			'play_random_media_file',
 			{},
 			[],
@@ -189,7 +189,7 @@ export default function (self) {
 			type: 'simple',
 			name: 'Encoder: Select / Play Media File',
 			keywords: ['encoder', 'media', 'file', 'music', 'rotary'],
-			style: style('MUSIC\\n$(this:selected_media_file)', COLORS.dark, COLORS.white, '11'),
+			style: style('MUSIC\n$(this:selected_media_file)', COLORS.dark, COLORS.white, '11'),
 			steps: encoderStep(
 				[action('play_selected_media_file')],
 				[action('select_media_previous')],
@@ -214,7 +214,7 @@ export default function (self) {
 	for (let number = 1; number <= 12; number++) {
 		presets[`preset_${number}`] = simplePreset(
 			`Preset ${number}`,
-			`PRESET\\n${number}`,
+			`PRESET\n${number}`,
 			`preset_${number}`,
 			{},
 			[],
