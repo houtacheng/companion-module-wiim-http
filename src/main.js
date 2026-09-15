@@ -17,6 +17,13 @@ const DEFAULT_HTTPS_PORT = 443
 const MS_PER_SECOND = 1000
 const NEAR_END_MS = 3000
 
+// A subnet sweep is 254 hosts across two protocols, so a device that stays
+// offline must not be able to start one per failed command.
+const DISCOVERY_COOLDOWN_MS = 60000
+
+// Directory listings come from arbitrary servers; cap what we'll buffer.
+const MAX_RESPONSE_BYTES = 4 * 1024 * 1024
+
 class ModuleInstance extends InstanceBase {
 	constructor(internal) {
 		super(internal)
@@ -44,7 +51,12 @@ class ModuleInstance extends InstanceBase {
 		this.pollTimer = undefined
 		this.mediaScanTimer = undefined
 		this.mediaScanInProgress = false
+		this.pollInProgress = false
 		this.pollCount = 0
+		this.destroyed = false
+		this.discoveryPromise = undefined
+		this.lastDiscoveryAt = 0
+		this.pendingRequests = new Set()
 	}
 
 	async init(config) {
@@ -60,8 +72,15 @@ class ModuleInstance extends InstanceBase {
 	}
 
 	async destroy() {
+		this.destroyed = true
 		this.stopPolling()
 		this.stopMediaLibraryAutoScan()
+
+		// Otherwise a reply to an in-flight request lands on a torn-down instance.
+		for (const request of this.pendingRequests) {
+			request.destroy()
+		}
+		this.pendingRequests.clear()
 	}
 
 	async configUpdated(config) {
@@ -286,7 +305,7 @@ class ModuleInstance extends InstanceBase {
 		if (!this.getConfiguredHost()) {
 			if (this.config?.autoFindWiiM === true && this.getScanSubnetPrefixes().length > 0) {
 				this.updateStatus(InstanceStatus.Connecting, 'Scanning subnet for WiiM')
-				this.discoverWiiMDevice().then((host) => {
+				this.rediscoverWiiMDevice({ force: true }).then((host) => {
 					if (!host) {
 						this.updateStatus(InstanceStatus.BadConfig, 'No WiiM found on subnet')
 						this.setVariableValues({
@@ -394,6 +413,23 @@ class ModuleInstance extends InstanceBase {
 		return ''
 	}
 
+	// Failures arrive from several commands in the same poll. Coalesce them onto a
+	// single scan, and rate-limit afterwards so a device that stays offline can't
+	// turn every poll into another sweep.
+	async rediscoverWiiMDevice({ force = false } = {}) {
+		if (this.discoveryPromise) return this.discoveryPromise
+		if (this.destroyed) return ''
+		if (!force && Date.now() - this.lastDiscoveryAt < DISCOVERY_COOLDOWN_MS) return ''
+
+		this.state.discoveredHost = ''
+		this.discoveryPromise = this.discoverWiiMDevice().finally(() => {
+			this.lastDiscoveryAt = Date.now()
+			this.discoveryPromise = undefined
+		})
+
+		return this.discoveryPromise
+	}
+
 	async discoverWiiMDevice() {
 		const prefixes = this.getScanSubnetPrefixes()
 		if (prefixes.length === 0) return ''
@@ -416,6 +452,7 @@ class ModuleInstance extends InstanceBase {
 
 		const worker = async () => {
 			while (!found && cursor < candidates.length) {
+				if (this.destroyed) return
 				const host = candidates[cursor++]
 				const device = await this.probeWiiMHost(host)
 				if (!device) continue
@@ -548,8 +585,7 @@ class ModuleInstance extends InstanceBase {
 
 		const message = lastError?.message || 'Unknown connection error'
 		if (this.config?.autoFindWiiM === true && !options.discoveryRetry) {
-			this.state.discoveredHost = ''
-			const host = await this.discoverWiiMDevice()
+			const host = await this.rediscoverWiiMDevice()
 			if (host) return this.sendCommand(command, { ...options, discoveryRetry: true })
 		}
 
@@ -572,9 +608,16 @@ class ModuleInstance extends InstanceBase {
 				},
 				(response) => {
 					let body = ''
+					let bytes = 0
 
 					response.setEncoding('utf8')
 					response.on('data', (chunk) => {
+						bytes += Buffer.byteLength(chunk, 'utf8')
+						if (bytes > MAX_RESPONSE_BYTES) {
+							request.destroy(new Error(`Response exceeded ${MAX_RESPONSE_BYTES} bytes`))
+							return
+						}
+
 						body += chunk
 					})
 					response.on('end', () => {
@@ -588,6 +631,8 @@ class ModuleInstance extends InstanceBase {
 				},
 			)
 
+			this.pendingRequests.add(request)
+			request.on('close', () => this.pendingRequests.delete(request))
 			request.on('timeout', () => {
 				request.destroy(new Error('Connection timed out'))
 			})
@@ -607,6 +652,19 @@ class ModuleInstance extends InstanceBase {
 	}
 
 	async pollStatus() {
+		// Each poll issues up to four sequential requests, so a slow device can take
+		// far longer than the poll interval. Skip rather than stacking them up.
+		if (this.pollInProgress || this.destroyed) return
+		this.pollInProgress = true
+
+		try {
+			await this.runPollCycle()
+		} finally {
+			this.pollInProgress = false
+		}
+	}
+
+	async runPollCycle() {
 		this.pollCount += 1
 
 		const player = await this.sendCommand('getPlayerStatus', { silent: true, timeoutMs: 4000 })
