@@ -791,17 +791,35 @@ class ModuleInstance extends InstanceBase {
 		return `${minutes}:${String(secs).padStart(2, '0')}`
 	}
 
+	// WiiM hex-encodes Title/Artist/Album, but some sources hand them back as plain
+	// text -- and plenty of real words are spelled entirely from a-f ("ABBA",
+	// "Facade", "decade"), as are bare years like "2024". Decoding on shape alone
+	// turned those into mojibake, so only accept a decode whose bytes round-trip as
+	// UTF-8 and whose result actually reads as text.
+	decodeHexText(text) {
+		if (text.length < 8 || text.length % 2 !== 0 || !/^[0-9a-f]+$/i.test(text)) return undefined
+
+		let decoded
+		try {
+			decoded = Buffer.from(text, 'hex').toString('utf8')
+		} catch (_error) {
+			return undefined
+		}
+
+		// Invalid UTF-8 decodes to U+FFFD, which never re-encodes to the input.
+		if (Buffer.from(decoded, 'utf8').toString('hex') !== text.toLowerCase()) return undefined
+
+		const cleaned = decoded.replace(/\0/g, '')
+		if (/[\u0001-\u0008\u000b\u000c\u000e-\u001f]/.test(cleaned)) return undefined
+		if (!/\p{L}/u.test(cleaned)) return undefined
+
+		return cleaned.trim()
+	}
+
 	cleanText(value) {
 		const text = String(value || '').trim()
 		if (!text || text === 'unknow' || text === 'un_known') return ''
-		if (/^[0-9a-f]+$/i.test(text) && text.length % 2 === 0) {
-			try {
-				return Buffer.from(text, 'hex').toString('utf8').replace(/\0/g, '').trim()
-			} catch (_error) {
-				return text
-			}
-		}
-		return text
+		return this.decodeHexText(text) ?? text
 	}
 
 	getFileName(value) {
