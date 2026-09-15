@@ -7,6 +7,8 @@ Works with WiiM Mini, Pro, Pro Plus, Amp, Amp Pro and Ultra — and, in practice
 with most LinkPlay-based devices, since they share the same `httpapi.asp`
 interface.
 
+**[Documentation](https://houtacheng.github.io/companion-module-wiim-http/)** · [Releases](https://github.com/houtacheng/companion-module-wiim-http/releases) · [Changelog](CHANGELOG.md)
+
 |                          |                           |
 | ------------------------ | ------------------------- |
 | Actions                  | 78                        |
@@ -148,6 +150,9 @@ polling and state; actions, feedbacks, presets and variables each register from
 their own file; `src/choices.js` holds the shared enumerations, including the
 loop-mode table that is the single source of truth for shuffle/repeat;
 `src/api-catalog.js` is generated and should not be hand-edited.
+
+`docs/` is the GitHub Pages site — a single self-contained `index.html`,
+published from the `main` branch.
 
 ## Sources
 

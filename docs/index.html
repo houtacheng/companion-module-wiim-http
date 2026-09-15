@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WiiM HTTP for Companion</title>
+<meta name="description" content="Reference and release notes for the Bitfocus Companion module that controls WiiM streamers and amplifiers over their built-in HTTP API.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20100%20100%22%3E%3Ctext%20y%3D%22.9em%22%20font-size%3D%2290%22%3E%F0%9F%8E%9B%EF%B8%8F%3C%2Ftext%3E%3C%2Fsvg%3E">
+<link rel="canonical" href="https://houtacheng.github.io/companion-module-wiim-http/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="WiiM HTTP for Companion">
+<meta property="og:description" content="Reference and release notes for the Bitfocus Companion module that controls WiiM streamers and amplifiers over their built-in HTTP API.">
+<meta property="og:url" content="https://houtacheng.github.io/companion-module-wiim-http/">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+html { color-scheme: light dark; }
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+</style>
+<style>
+:root {
+  --ground:      #E6E9ED;
+  --panel:       #F4F6F8;
+  --panel-sunk:  #DCE0E6;
+  --ink:         #13171C;
+  --ink-dim:     #565F6A;
+  --ink-faint:   #7D8791;
+  --rule:        #C6CCD4;
+  --rule-soft:   #D6DBE1;
+  --accent:      #0B6E78;
+  --accent-soft: #0B6E7818;
+  --signal:      #9A4E06;
+  --signal-soft: #9A4E0614;
+
+  --display: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --body: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --measure: 64ch;
+  --gutter: clamp(20px, 5vw, 64px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:      #121519;
+    --panel:       #1A1E24;
+    --panel-sunk:  #0C0F12;
+    --ink:         #E3E7EB;
+    --ink-dim:     #98A1AB;
+    --ink-faint:   #6C757F;
+    --rule:        #2B313A;
+    --rule-soft:   #232930;
+    --accent:      #46CFC6;
+    --accent-soft: #46CFC61F;
+    --signal:      #E5A343;
+    --signal-soft: #E5A3431A;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground:      #121519;
+  --panel:       #1A1E24;
+  --panel-sunk:  #0C0F12;
+  --ink:         #E3E7EB;
+  --ink-dim:     #98A1AB;
+  --ink-faint:   #6C757F;
+  --rule:        #2B313A;
+  --rule-soft:   #232930;
+  --accent:      #46CFC6;
+  --accent-soft: #46CFC61F;
+  --signal:      #E5A343;
+  --signal-soft: #E5A3431A;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 17px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding-inline: var(--gutter);
+  padding-block: clamp(36px, 7vw, 76px) 72px;
+}
+
+/* ---- type ---- */
+h1, h2, h3, .eyebrow, .stat-n, .badge, .btn, th, .mono {
+  font-family: var(--display);
+}
+
+h1 {
+  font-size: clamp(2.3rem, 6.4vw, 3.6rem);
+  font-weight: 700;
+  letter-spacing: -0.032em;
+  line-height: 1.02;
+  margin: 0;
+  text-wrap: balance;
+}
+
+h2 {
+  font-size: clamp(1.32rem, 3vw, 1.62rem);
+  font-weight: 600;
+  letter-spacing: -0.018em;
+  line-height: 1.16;
+  margin: 0;
+  text-wrap: balance;
+}
+
+h3 {
+  font-size: 0.83rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  margin: 0;
+}
+
+p { margin: 0; max-width: var(--measure); }
+
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0;
+}
+
+.mono { font-family: var(--mono); font-size: 0.88em; }
+
+code {
+  font-family: var(--mono);
+  font-size: 0.855em;
+  background: var(--accent-soft);
+  color: var(--ink);
+  padding: 0.1em 0.38em;
+  border-radius: 3px;
+  word-break: break-word;
+}
+
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+a:focus-visible, .btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ---- header ---- */
+header { display: flex; flex-direction: column; gap: 18px; }
+
+.lede {
+  font-size: clamp(1.06rem, 2.4vw, 1.24rem);
+  color: var(--ink-dim);
+  max-width: 54ch;
+}
+
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.badge {
+  font-size: 0.73rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  color: var(--ink-dim);
+}
+
+.badge.live {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.btn {
+  font-size: 0.83rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  padding: 8px 15px;
+  border-radius: 2px;
+  text-decoration: none;
+  border: 1px solid var(--ink);
+  color: var(--ground);
+  background: var(--ink);
+  transition: opacity 0.15s ease;
+}
+.btn:hover { opacity: 0.84; }
+
+.btn.ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--rule);
+}
+.btn.ghost:hover { border-color: var(--ink); opacity: 1; }
+
+/* ---- spec strip ---- */
+.specs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: 1px;
+  background: var(--rule-soft);
+  border-block: 1px solid var(--rule);
+  margin-block: clamp(34px, 6vw, 56px);
+}
+
+.spec {
+  background: var(--ground);
+  padding: 18px 4px 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.spec:not(:first-child) { padding-left: 18px; }
+
+.stat-n {
+  font-size: clamp(1.65rem, 4vw, 2.1rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-l {
+  font-family: var(--display);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ---- sections ---- */
+section { margin-block: clamp(42px, 7vw, 68px); }
+.sec-head { display: flex; flex-direction: column; gap: 9px; margin-bottom: 26px; }
+
+/* ---- definition rows ---- */
+.rows { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) minmax(0, 2.7fr);
+  gap: 6px 26px;
+  padding-block: 15px;
+  border-bottom: 1px solid var(--rule-soft);
+  align-items: baseline;
+}
+
+.row dt, .row .k {
+  font-family: var(--display);
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: 0.012em;
+}
+
+.row dd, .row .v { margin: 0; color: var(--ink-dim); font-size: 0.97rem; }
+
+@media (max-width: 620px) {
+  .row { grid-template-columns: 1fr; gap: 4px; }
+}
+
+/* ---- ordered steps ---- */
+ol.steps { list-style: none; margin: 0; padding: 0; counter-reset: s; display: flex; flex-direction: column; }
+
+ol.steps > li {
+  counter-increment: s;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 4px 16px;
+  padding-block: 17px;
+  border-top: 1px solid var(--rule-soft);
+}
+ol.steps > li:first-child { border-top: 1px solid var(--rule); }
+
+ol.steps > li::before {
+  content: counter(s);
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  color: var(--accent);
+  padding-top: 0.24em;
+}
+
+ol.steps h4 {
+  font-family: var(--display);
+  font-size: 0.97rem;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.005em;
+}
+ol.steps p { grid-column: 2; color: var(--ink-dim); font-size: 0.96rem; }
+
+/* ---- loop matrix ---- */
+.matrix-scroll { overflow-x: auto; border-block: 1px solid var(--rule); }
+
+table.matrix {
+  width: 100%;
+  min-width: 480px;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+table.matrix th {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  text-align: left;
+  padding: 13px 16px 11px 0;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+table.matrix th.c, table.matrix td.c { text-align: center; padding-inline: 8px; }
+
+table.matrix td {
+  padding: 13px 16px 13px 0;
+  border-bottom: 1px solid var(--rule-soft);
+  vertical-align: middle;
+}
+table.matrix tr:last-child td { border-bottom: none; }
+
+.mode-name { font-family: var(--display); font-weight: 600; letter-spacing: -0.005em; white-space: nowrap; }
+
+.val {
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.dot {
+  display: inline-block;
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink-faint);
+  vertical-align: -1px;
+}
+.dot.on { background: var(--accent); border-color: var(--accent); }
+
+.rpt {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.rpt.off { color: var(--ink-faint); }
+
+.was {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--signal);
+  white-space: nowrap;
+}
+.was.same { color: var(--ink-faint); }
+
+/* ---- note ---- */
+.note {
+  border-left: 2px solid var(--signal);
+  background: var(--signal-soft);
+  padding: 14px 18px;
+  margin-top: 24px;
+  font-size: 0.95rem;
+  color: var(--ink-dim);
+  max-width: var(--measure);
+}
+.note strong { color: var(--ink); font-family: var(--display); font-size: 0.92rem; font-weight: 600; }
+
+/* ---- control groups ---- */
+.groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(255px, 1fr)); gap: 0 40px; }
+
+.group { padding-block: 17px; border-top: 1px solid var(--rule-soft); }
+.group:first-child, .group:nth-child(2) { border-top: 1px solid var(--rule); }
+@media (max-width: 574px) { .group:nth-child(2) { border-top: 1px solid var(--rule-soft); } }
+
+.group h4 {
+  font-family: var(--display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  margin: 0 0 5px;
+}
+.group p { font-size: 0.94rem; color: var(--ink-dim); }
+
+/* ---- fix list ---- */
+.fixes { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
+
+.fix {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 4px 20px;
+  padding-block: 18px;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.fix .tag {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-faint);
+  padding-top: 0.22em;
+  white-space: nowrap;
+}
+
+.fix h4 {
+  font-family: var(--display);
+  font-size: 0.99rem;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.008em;
+}
+.fix p { grid-column: 2; color: var(--ink-dim); font-size: 0.95rem; }
+
+@media (max-width: 620px) {
+  .fix { grid-template-columns: 1fr; }
+  .fix p { grid-column: 1; }
+}
+
+/* ---- code block ---- */
+pre {
+  font-family: var(--mono);
+  font-size: 0.83rem;
+  line-height: 1.75;
+  background: var(--panel-sunk);
+  border: 1px solid var(--rule-soft);
+  border-radius: 3px;
+  padding: 15px 17px;
+  overflow-x: auto;
+  margin: 0;
+  max-width: var(--measure);
+}
+pre .cm { color: var(--ink-faint); }
+
+/* ---- footer ---- */
+footer {
+  margin-top: clamp(50px, 8vw, 80px);
+  padding-top: 26px;
+  border-top: 1px solid var(--rule);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 34px;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.89rem;
+  color: var(--ink-faint);
+}
+footer p { font-size: 0.89rem; color: var(--ink-faint); max-width: 48ch; }
+
+.stack-sm { display: flex; flex-direction: column; gap: 13px; }
+.stack-md { display: flex; flex-direction: column; gap: 19px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">Bitfocus Companion &middot; Connection module</p>
+    <h1>WiiM HTTP for Companion</h1>
+    <p class="lede">Control WiiM streamers and amplifiers from a Companion button surface, over the HTTP API already built into the device. No cloud, no bridge.</p>
+    <div class="meta-row">
+      <a class="btn" href="https://github.com/houtacheng/companion-module-wiim-http/releases/latest">Download v1.5.1</a>
+      <a class="btn ghost" href="https://github.com/houtacheng/companion-module-wiim-http">Source on GitHub</a>
+      <span class="badge live">MIT</span>
+      <span class="badge">Companion 4.0+</span>
+    </div>
+  </header>
+
+  <div class="specs">
+    <div class="spec"><span class="stat-n">78</span><span class="stat-l">Actions</span></div>
+    <div class="spec"><span class="stat-n">7</span><span class="stat-l">Feedbacks</span></div>
+    <div class="spec"><span class="stat-n">56</span><span class="stat-l">Variables</span></div>
+    <div class="spec"><span class="stat-n">36</span><span class="stat-l">Presets</span></div>
+    <div class="spec"><span class="stat-n">346</span><span class="stat-l">API endpoints</span></div>
+  </div>
+
+  <section>
+    <div class="sec-head">
+      <h2>Hardware</h2>
+      <p>Built for WiiM Mini, Pro, Pro Plus, Amp, Amp Pro and Ultra. In practice most LinkPlay-based devices work too, since they share the same interface — every command is a plain GET:</p>
+    </div>
+    <pre>https://192.168.1.42/httpapi.asp?command=setPlayerCmd:vol:40
+<span class="cm">→ OK</span>
+
+https://192.168.1.42/httpapi.asp?command=getPlayerStatus
+<span class="cm">→ {"status":"play","vol":"40","curpos":"63634","totlen":"225000",…}</span></pre>
+    <div class="note">
+      <strong>HTTPS first.</strong> Newer firmware answers only over HTTPS, with a self-signed certificate. Leave Protocol on <code>Auto</code> and the module tries HTTPS, then falls back to HTTP.
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Finding the device</h2>
+      <p>Three ways to point the connection at a device, in order of preference.</p>
+    </div>
+    <ol class="steps">
+      <li>
+        <h4>Bonjour discovery</h4>
+        <p>Pick it from <em>Discovered WiiM Device</em>. Survives DHCP handing the device a new address.</p>
+      </li>
+      <li>
+        <h4>Manual address</h4>
+        <p>Type an IP or hostname. Simplest when the device has a reservation.</p>
+      </li>
+      <li>
+        <h4>Subnet scan</h4>
+        <p>Sweeps the networks your interfaces are on. A /22 is covered as four /24 blocks, so the device is found wherever in the range it sits. Pin it to one unit with <em>Target Name / MAC / UUID</em>.</p>
+      </li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>What it controls</h2>
+    </div>
+    <div class="groups">
+      <div class="group">
+        <h4>Transport</h4>
+        <p>Play, pause, stop, toggle, next, previous, absolute and relative seek, play any URI.</p>
+      </div>
+      <div class="group">
+        <h4>Volume</h4>
+        <p>Set, step, mute on/off/toggle, max volume ceiling, channel balance.</p>
+      </div>
+      <div class="group">
+        <h4>Sources</h4>
+        <p>Network, Bluetooth, line in, optical, USB, coaxial, HDMI, HDMI ARC — plus next/previous stepping for encoders.</p>
+      </div>
+      <div class="group">
+        <h4>EQ</h4>
+        <p>On, off, 24 named presets, bass and treble levels.</p>
+      </div>
+      <div class="group">
+        <h4>Device</h4>
+        <p>Standby, wake, reboot, status LED, touch controls, shutdown timer, Bluetooth pairing, room correction.</p>
+      </div>
+      <div class="group">
+        <h4>Everything else</h4>
+        <p>All 346 documented endpoints as a dropdown, either fire-and-forget or capturing the reply into <code>api_last_*</code> variables.</p>
+      </div>
+    </div>
+    <div class="note">
+      <strong>No confirmation step.</strong> Some documented endpoints are genuinely destructive — factory reset, network reconfiguration, firmware operations. A button press fires immediately.
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Repeat and shuffle</h2>
+      <p>The device packs both settings into one <code>loop</code> value, so there are six states rather than two independent switches. Version 1.5.0 corrected the mapping — the last column is what each value used to be labelled.</p>
+    </div>
+    <div class="matrix-scroll">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th>Mode</th>
+            <th class="c">Shuffle</th>
+            <th>Repeat</th>
+            <th class="c"><code style="background:none;padding:0">loop</code></th>
+            <th>Was labelled</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="mode-name">Off</td>
+            <td class="c"><span class="dot" aria-label="off"></span></td>
+            <td><span class="rpt off">none</span></td>
+            <td class="c"><span class="val">4</span></td>
+            <td><span class="was">Repeat All</span></td>
+          </tr>
+          <tr>
+            <td class="mode-name">Repeat All</td>
+            <td class="c"><span class="dot" aria-label="off"></span></td>
+            <td><span class="rpt">all</span></td>
+            <td class="c"><span class="val">0</span></td>
+            <td><span class="was">Repeat Off</span></td>
+          </tr>
+          <tr>
+            <td class="mode-name">Repeat One</td>
+            <td class="c"><span class="dot" aria-label="off"></span></td>
+            <td><span class="rpt">one</span></td>
+            <td class="c"><span class="val">1</span></td>
+            <td><span class="was same">unchanged</span></td>
+          </tr>
+          <tr>
+            <td class="mode-name">Shuffle</td>
+            <td class="c"><span class="dot on" aria-label="on"></span></td>
+            <td><span class="rpt off">none</span></td>
+            <td class="c"><span class="val">3</span></td>
+            <td><span class="was">Shuffle Repeat</span></td>
+          </tr>
+          <tr>
+            <td class="mode-name">Shuffle + Repeat All</td>
+            <td class="c"><span class="dot on" aria-label="on"></span></td>
+            <td><span class="rpt">all</span></td>
+            <td class="c"><span class="val">2</span></td>
+            <td><span class="was">Shuffle</span></td>
+          </tr>
+          <tr>
+            <td class="mode-name">Shuffle + Repeat One</td>
+            <td class="c"><span class="dot on" aria-label="on"></span></td>
+            <td><span class="rpt">one</span></td>
+            <td class="c"><span class="val">5</span></td>
+            <td><span class="was">Repeat Single</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note">
+      <strong>Each action changes only its own half.</strong> Because the two settings share one value, turning shuffle off used to reset the repeat mode as a side effect. It now carries the other setting across.
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Media library</h2>
+      <p>Companion can't open a native file picker inside a module, so the module reads a folder over HTTP and turns it into a file list you can drive from a button or an encoder.</p>
+    </div>
+    <dl class="rows">
+      <div class="row"><dt>Directory listing</dt><dd>Walked to a configurable depth from the base URL.</dd></div>
+      <div class="row"><dt>Index file</dt><dd>Any of <code>files.txt</code>, <code>index.txt</code>, <code>playlist.m3u</code>, <code>index.m3u</code>, <code>files.json</code>, <code>index.json</code> — or a URL you name.</dd></div>
+      <div class="row"><dt>Explicit list</dt><dd>Filenames typed into the config, comma- or newline-separated. Use this when the server returns <code>403</code> for listings.</dd></div>
+      <div class="row"><dt>Auto Random Next</dt><dd>Plays another random library file when the current one reaches its end. Off by default.</dd></div>
+      <div class="row"><dt>Assist Repeat One</dt><dd>Works around firmware that reports Repeat One for direct URL playback but never actually replays the file.</dd></div>
+    </dl>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Fixed in 1.5</h2>
+      <p>The 1.5 line is almost entirely corrections, several of which changed behaviour you may have worked around.</p>
+    </div>
+    <div class="fixes">
+      <div class="fix">
+        <span class="tag">1.5.1</span>
+        <h4>Preset button text showed <code>$NA</code></h4>
+        <p>Presets referenced variables through a <code>this:</code> scope that Companion does not define, so the text never resolved. They now use the connection's label. Re-add affected presets to pick up the fix.</p>
+      </div>
+      <div class="fix">
+        <span class="tag">1.5.0</span>
+        <h4>Repeat and shuffle were inverted</h4>
+        <p><em>Repeat: Off</em> switched repeat-all on, and <em>Repeat: All</em> switched repeat off. Feedbacks saved against the old values keep their stored number and need reselecting.</p>
+      </div>
+      <div class="fix">
+        <span class="tag">1.5.0</span>
+        <h4>Time variables were 1000&times; too large</h4>
+        <p><code>curpos</code> and <code>totlen</code> are milliseconds but were reported as seconds — a position of 63,634&nbsp;ms rendered as 17:40:34 instead of 1:03.</p>
+      </div>
+      <div class="fix">
+        <span class="tag">1.5.0</span>
+        <h4>Relative seek overshot the track</h4>
+        <p>Seconds were added to a millisecond position, then sent to an API that expects seconds. Nudging forward 15s from 1:03 asked for second 63,649.</p>
+      </div>
+      <div class="fix">
+        <span class="tag">1.5.0</span>
+        <h4>Some track titles became mojibake</h4>
+        <p>Metadata arrives hex-encoded, and anything spelled only from <code>a</code>–<code>f</code> was decoded as bytes — so ABBA, cafe, Facade and bare years like 2024 came back as replacement characters.</p>
+      </div>
+      <div class="fix">
+        <span class="tag">1.5.0</span>
+        <h4>Polls stacked and scans stampeded</h4>
+        <p>With Auto Find on, every failed command started its own 254-host sweep, multiplied by overlapping polls. Rediscovery now shares one scan and backs off for 60 seconds.</p>
+      </div>
+      <div class="fix">
+        <span class="tag">1.5.0</span>
+        <h4>Subnet scanning assumed a /24</h4>
+        <p>Prefixes came from the interface address rather than its netmask, so on a /22 only one of four blocks was searched.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Install</h2>
+    </div>
+    <ol class="steps">
+      <li>
+        <h4>Download the package</h4>
+        <p>Grab <code>wiim-http-1.5.1.tgz</code> from the releases page.</p>
+      </li>
+      <li>
+        <h4>Import it</h4>
+        <p>In Companion: <em>Modules → Import module package</em>.</p>
+      </li>
+      <li>
+        <h4>Add the connection</h4>
+        <p>Search for <em>WiiM HTTP</em>, then point it at a device using one of the three methods above.</p>
+      </li>
+    </ol>
+    <div class="stack-sm" style="margin-top:28px">
+      <h3>Or build from source</h3>
+      <pre>git clone https://github.com/houtacheng/companion-module-wiim-http
+yarn install
+yarn package  <span class="cm"># → wiim-http-1.5.1.tgz</span></pre>
+    </div>
+  </section>
+
+  <footer>
+    <div class="stack-sm">
+      <p>Built against WiiM's published HTTP API v1.2 and the OpenAPI description from <a href="https://github.com/cvdlinden/wiim-httpapi">cvdlinden/wiim-httpapi</a>. Neither is redistributed here.</p>
+      <p>Not affiliated with WiiM, LinkPlay or Bitfocus.</p>
+    </div>
+    <div class="stack-sm">
+      <a href="https://github.com/houtacheng/companion-module-wiim-http">GitHub</a>
+      <a href="https://github.com/houtacheng/companion-module-wiim-http/blob/main/CHANGELOG.md">Changelog</a>
+      <a href="https://github.com/houtacheng/companion-module-wiim-http/issues">Report an issue</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>
