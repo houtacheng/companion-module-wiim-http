@@ -1,0 +1,36 @@
+{
+	"$schema": "../node_modules/@companion-module/base/assets/manifest.schema.json",
+	"type": "connection",
+	"id": "wiim-http",
+	"name": "WiiM HTTP",
+	"shortname": "WiiM",
+	"description": "Control WiiM streamers and amplifiers using the built-in HTTP API",
+	"version": "1.4.4",
+	"license": "MIT",
+	"repository": "git+https://github.com/local/companion-module-wiim-http.git",
+	"bugs": "https://github.com/local/companion-module-wiim-http/issues",
+	"maintainers": [
+		{
+			"name": "Local module",
+			"email": "local@example.com"
+		}
+	],
+	"runtime": {
+		"type": "node22",
+		"api": "nodejs-ipc",
+		"apiVersion": "0.0.0",
+		"entrypoint": "../src/main.js"
+	},
+	"legacyIds": [],
+	"manufacturer": "WiiM",
+	"products": ["Mini", "Pro", "Pro Plus", "Amp", "Amp Pro", "Ultra"],
+	"keywords": ["audio", "streamer", "amplifier", "linkplay", "http"],
+	"bonjourQueries": {
+		"wiimDevice": [
+			{ "type": "_http", "protocol": "tcp", "addressFamily": "ipv4" },
+			{ "type": "_airplay", "protocol": "tcp", "addressFamily": "ipv4" },
+			{ "type": "_raop", "protocol": "tcp", "addressFamily": "ipv4" },
+			{ "type": "_spotify-connect", "protocol": "tcp", "addressFamily": "ipv4" }
+		]
+	}
+}
