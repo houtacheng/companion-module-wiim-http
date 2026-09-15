@@ -11,6 +11,12 @@ import { inputChoices, getLoopMode, findLoopModeId, loopModeCycle } from './choi
 const DEFAULT_HTTP_PORT = 80
 const DEFAULT_HTTPS_PORT = 443
 
+// getPlayerStatus reports curpos/offset_pts/totlen in milliseconds, while
+// setPlayerCmd:seek takes whole seconds. Keep the two straight by suffixing
+// every local that holds one of them.
+const MS_PER_SECOND = 1000
+const NEAR_END_MS = 3000
+
 class ModuleInstance extends InstanceBase {
 	constructor(internal) {
 		super(internal)
@@ -634,9 +640,11 @@ class ModuleInstance extends InstanceBase {
 		const artist = this.cleanText(meta.artist || player.Artist || player.artist || '')
 		const album = this.cleanText(meta.album || player.Album || player.album || '')
 		const subtitle = this.cleanText(meta.subtitle || '')
-		const positionSeconds = this.toNumber(player.curpos ?? player.offset_pts)
-		const durationSeconds = this.toNumber(player.totlen)
-		const progressPercent = durationSeconds > 0 ? Math.round((positionSeconds / durationSeconds) * 100) : 0
+		const positionMs = this.getPositionMs()
+		const durationMs = this.getDurationMs()
+		const positionSeconds = Math.floor(positionMs / MS_PER_SECOND)
+		const durationSeconds = Math.floor(durationMs / MS_PER_SECOND)
+		const progressPercent = durationMs > 0 ? Math.round((positionMs / durationMs) * 100) : 0
 		const loopMode = String(player.loop ?? '')
 
 		this.setVariableValues({
@@ -775,6 +783,27 @@ class ModuleInstance extends InstanceBase {
 		const input =
 			inputChoices.find((choice) => choice.id === activeId) || inputChoices[this.state.selectedInputIndex || 0]
 		return input?.label || this.getSourceText()
+	}
+
+	getPositionMs() {
+		return this.toNumber(this.state.player?.curpos ?? this.state.player?.offset_pts)
+	}
+
+	getDurationMs() {
+		return this.toNumber(this.state.player?.totlen)
+	}
+
+	getPositionSeconds() {
+		return Math.floor(this.getPositionMs() / MS_PER_SECOND)
+	}
+
+	getDurationSeconds() {
+		return Math.floor(this.getDurationMs() / MS_PER_SECOND)
+	}
+
+	isNearEnd() {
+		const durationMs = this.getDurationMs()
+		return durationMs > 0 && this.getPositionMs() >= Math.max(0, durationMs - NEAR_END_MS)
 	}
 
 	toNumber(value) {
@@ -934,9 +963,7 @@ class ModuleInstance extends InstanceBase {
 		const playbackStatus = this.getPlaybackText()
 		const repeatsOne = this.getCurrentLoopMode()?.repeat === 'one'
 		const currentUrl = this.getCurrentPlaybackUrl()
-		const position = this.toNumber(this.state.player?.curpos ?? this.state.player?.offset_pts)
-		const duration = this.toNumber(this.state.player?.totlen)
-		const nearEnd = duration > 0 && position >= Math.max(0, duration - 3000)
+		const nearEnd = this.isNearEnd()
 
 		if (currentUrl && playbackStatus === 'play') {
 			this.state.lastPlaybackUrl = currentUrl
@@ -971,9 +998,7 @@ class ModuleInstance extends InstanceBase {
 		if (this.getCurrentLoopMode()?.repeat === 'one') return
 
 		const playbackStatus = this.getPlaybackText()
-		const position = this.toNumber(this.state.player?.curpos ?? this.state.player?.offset_pts)
-		const duration = this.toNumber(this.state.player?.totlen)
-		const nearEnd = duration > 0 && position >= Math.max(0, duration - 3000)
+		const nearEnd = this.isNearEnd()
 		const shouldPlayNext =
 			playbackStatus === 'stop' &&
 			this.state.lastPlaybackStatus === 'play' &&

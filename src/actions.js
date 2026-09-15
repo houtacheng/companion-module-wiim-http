@@ -158,8 +158,11 @@ export default function (self) {
 				},
 			],
 			callback: async (event) => {
-				const current = Number(self.state.player.curpos ?? 0)
-				const next = Math.max(0, current + Number(event.options.seconds))
+				// curpos is milliseconds, seek wants seconds. Clamp to the track so a
+				// large jump lands at the end instead of past it, which stops playback.
+				const target = self.getPositionSeconds() + Number(event.options.seconds)
+				const durationSeconds = self.getDurationSeconds()
+				const next = Math.max(0, durationSeconds > 0 ? Math.min(target, durationSeconds) : target)
 				await self.sendCommand(`setPlayerCmd:seek:${next}`)
 			},
 		},
