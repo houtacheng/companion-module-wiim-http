@@ -2,7 +2,7 @@
 
 Controls WiiM products using the local HTTP API.
 
-Configure the module by selecting a discovered WiiM device when Bonjour/mDNS discovery is available. This lets Companion keep working when DHCP changes the WiiM IP address. If Bonjour discovery is unavailable, enable `Auto Find WiiM by Subnet Scan`. You can leave `Subnet Scan Prefix` blank to scan the local IPv4 networks automatically, or set a prefix such as `10.43.50.`. Optionally set `Target Name / MAC / UUID` to identify one specific WiiM. Newer firmware may require HTTPS with a self-signed certificate; discovery probes HTTPS first and then falls back to HTTP. Leave Protocol set to `Auto` unless you know the device only supports one protocol.
+Configure the module by selecting a discovered WiiM device when Bonjour/mDNS discovery is available. This lets Companion keep working when DHCP changes the WiiM IP address. If Bonjour discovery is unavailable, enable `Auto Find WiiM by Subnet Scan`. You can leave `Subnet Scan Prefix` blank to scan the local IPv4 networks automatically, or set a prefix such as `10.43.50.`. Networks wider than a /24 are covered by scanning each /24 block the interface spans, up to four blocks. A failed scan is not retried for 60 seconds. Optionally set `Target Name / MAC / UUID` to identify one specific WiiM. Newer firmware may require HTTPS with a self-signed certificate; discovery probes HTTPS first and then falls back to HTTP. Leave Protocol set to `Auto` unless you know the device only supports one protocol.
 
 ## Included controls
 
@@ -44,6 +44,24 @@ Encoder presets are included:
 - `Encoder: Volume / Mute`: rotate left/right for volume down/up, press to toggle mute.
 - `Encoder: Select Input Source`: rotate left/right to switch input source.
 - `Encoder: Select / Play Media File`: rotate left/right to select a scanned media file, press to play it.
+
+## Repeat and shuffle
+
+The WiiM API packs shuffle and repeat into one `loop` value, so the module exposes
+the six documented combinations rather than separate switches:
+
+| Mode                   | Shuffle | Repeat |
+| ---------------------- | ------- | ------ |
+| `Off`                  | off     | off    |
+| `Repeat All`           | off     | all    |
+| `Repeat One`           | off     | one    |
+| `Shuffle`              | on      | off    |
+| `Shuffle + Repeat All` | on      | all    |
+| `Shuffle + Repeat One` | on      | one    |
+
+`Repeat: Off/One/All` and `Shuffle: On/Off` each change only their own half and
+carry the other setting across. `Repeat/Shuffle: Cycle Mode` steps through Repeat
+One, Repeat All, Shuffle and Off.
 
 ## Media Library
 

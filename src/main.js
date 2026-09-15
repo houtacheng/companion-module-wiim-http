@@ -6,6 +6,7 @@ import UpdateActions from './actions.js'
 import UpdateFeedbacks from './feedbacks.js'
 import UpdateVariableDefinitions from './variables.js'
 import UpdatePresets from './presets.js'
+import UpgradeScripts from './upgrades.js'
 import { inputChoices, getLoopMode, findLoopModeId, loopModeCycle } from './choices.js'
 
 const DEFAULT_HTTP_PORT = 80
@@ -1427,3 +1428,4 @@ class ModuleInstance extends InstanceBase {
 }
 
 export default ModuleInstance
+export { UpgradeScripts as upgradeScripts }

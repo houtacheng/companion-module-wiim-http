@@ -1,6 +1,6 @@
 {
 	"name": "companion-module-wiim-http",
-	"version": "1.4.4",
+	"version": "1.5.0",
 	"main": "src/main.js",
 	"type": "module",
 	"scripts": {
