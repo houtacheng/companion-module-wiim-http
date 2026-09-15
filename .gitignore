@@ -1,7 +1,20 @@
+# Dependencies
 node_modules
-pkg
-*.tgz
 .yarn/cache
-.pnp.*
 .yarn/install-state.gz
 .yarn/unplugged
+.pnp.*
+
+# Build output
+pkg
+*.tgz
+
+# Local-only: vendor API documentation, kept out of the repo because it is
+# third-party material. See README for the upstream sources.
+reference/
+
+# Local-only: previously built packages
+archive/
+
+# macOS
+.DS_Store
