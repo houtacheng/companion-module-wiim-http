@@ -1,4 +1,4 @@
-module.exports = function (self) {
+export default function (self) {
 	self.setVariableDefinitions({
 		connection: { name: 'Connection status' },
 		device_name: { name: 'Device name' },

@@ -1,11 +1,11 @@
-const { combineRgb } = require('@companion-module/base')
-const { inputChoices, loopModeChoices, playbackStatusChoices, sourceAliases } = require('./choices')
+import { combineRgb } from '@companion-module/base'
+import { inputChoices, loopModeChoices, playbackStatusChoices, sourceAliases } from './choices.js'
 
 function normalize(value) {
 	return String(value || '').toLowerCase()
 }
 
-module.exports = function (self) {
+export default function (self) {
 	self.setFeedbackDefinitions({
 		connection: {
 			type: 'boolean',

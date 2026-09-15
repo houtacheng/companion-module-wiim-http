@@ -1,6 +1,6 @@
-const { Regex } = require('@companion-module/base')
-const { inputChoices, loopModeChoices, eqPresetChoices } = require('./choices')
-const { documentedEndpointChoices, documentedEndpointMap } = require('./api-catalog')
+import { Regex } from '@companion-module/base'
+import { inputChoices, loopModeChoices, eqPresetChoices } from './choices.js'
+import { documentedEndpointChoices, documentedEndpointMap } from './api-catalog.js'
 
 function transportAction(name, command) {
 	return {
@@ -107,7 +107,7 @@ const documentedApiOptions = [
 	},
 ]
 
-module.exports = function (self) {
+export default function (self) {
 	const actions = {
 		play: transportAction.call(self, 'Playback: Play / Resume', 'resume'),
 		pause: transportAction.call(self, 'Playback: Pause', 'pause'),

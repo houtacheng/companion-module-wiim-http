@@ -3525,8 +3525,4 @@ const documentedEndpointChoices = documentedEndpoints.map((endpoint) => ({
 
 const documentedEndpointMap = Object.fromEntries(documentedEndpoints.map((endpoint) => [endpoint.id, endpoint]))
 
-module.exports = {
-	documentedEndpoints,
-	documentedEndpointChoices,
-	documentedEndpointMap,
-}
+export { documentedEndpoints, documentedEndpointChoices, documentedEndpointMap }

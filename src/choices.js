@@ -62,10 +62,4 @@ const sourceAliases = {
 	hdmi_arc: ['hdmi_arc', 'hdmi arc', 'arc'],
 }
 
-module.exports = {
-	inputChoices,
-	loopModeChoices,
-	eqPresetChoices,
-	playbackStatusChoices,
-	sourceAliases,
-}
+export { inputChoices, loopModeChoices, eqPresetChoices, playbackStatusChoices, sourceAliases }

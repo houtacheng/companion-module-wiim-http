@@ -2,6 +2,7 @@
 	"name": "companion-module-wiim-http",
 	"version": "1.4.4",
 	"main": "src/main.js",
+	"type": "module",
 	"scripts": {
 		"format": "prettier -w .",
 		"package": "companion-module-build"

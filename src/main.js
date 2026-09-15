@@ -1,12 +1,12 @@
-const http = require('http')
-const https = require('https')
-const os = require('os')
-const { InstanceBase, Regex, InstanceStatus } = require('@companion-module/base')
-const UpdateActions = require('./actions')
-const UpdateFeedbacks = require('./feedbacks')
-const UpdateVariableDefinitions = require('./variables')
-const UpdatePresets = require('./presets')
-const { inputChoices } = require('./choices')
+import http from 'http'
+import https from 'https'
+import os from 'os'
+import { InstanceBase, Regex, InstanceStatus } from '@companion-module/base'
+import UpdateActions from './actions.js'
+import UpdateFeedbacks from './feedbacks.js'
+import UpdateVariableDefinitions from './variables.js'
+import UpdatePresets from './presets.js'
+import { inputChoices } from './choices.js'
 
 const DEFAULT_HTTP_PORT = 80
 const DEFAULT_HTTPS_PORT = 443

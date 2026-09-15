@@ -1,4 +1,4 @@
-const { combineRgb } = require('@companion-module/base')
+import { combineRgb } from '@companion-module/base'
 
 const COLORS = {
 	black: combineRgb(0, 0, 0),
@@ -83,7 +83,7 @@ function inputFeedback(input) {
 	}
 }
 
-module.exports = function (self) {
+export default function (self) {
 	const presets = {
 		play: simplePreset('Play', 'PLAY', 'play', {}, [playbackFeedback('play', COLORS.green)], ['transport']),
 		pause: simplePreset(
