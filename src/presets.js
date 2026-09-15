@@ -241,7 +241,7 @@ export default function (self) {
 		{
 			id: 'repeat',
 			name: 'Repeat / Shuffle',
-			definitions: ['repeat_cycle'],
+			definitions: ['repeat_cycle', 'repeat_one', 'repeat_all', 'repeat_off', 'shuffle_on'],
 		},
 		{
 			id: 'sources',

@@ -550,7 +550,8 @@ export default function (self) {
 				},
 			],
 			callback: async (event) => {
-				await self.sendCommand(`RoomCorrSetMode:{"Mode":"${event.options.mode}"}`)
+				// Hand-built JSON broke on any mode containing a quote or backslash.
+				await self.sendCommand(`RoomCorrSetMode:${JSON.stringify({ Mode: String(event.options.mode ?? '') })}`)
 			},
 		},
 

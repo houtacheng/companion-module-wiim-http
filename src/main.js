@@ -24,6 +24,10 @@ const DISCOVERY_COOLDOWN_MS = 60000
 // Directory listings come from arbitrary servers; cap what we'll buffer.
 const MAX_RESPONSE_BYTES = 4 * 1024 * 1024
 
+// How many /24 blocks to derive from one interface. A /22 is four, which is
+// common on prosumer gear; anything wider gets truncated rather than swept.
+const MAX_SCAN_SUBNETS = 4
+
 class ModuleInstance extends InstanceBase {
 	constructor(internal) {
 		super(internal)
@@ -384,12 +388,46 @@ class ModuleInstance extends InstanceBase {
 		for (const addresses of Object.values(interfaces)) {
 			for (const address of addresses || []) {
 				if (address.family !== 'IPv4' || address.internal) continue
-				const localMatch = address.address.match(/^(\d{1,3}\.\d{1,3}\.\d{1,3}\.)\d{1,3}$/)
-				if (localMatch) addPrefix(localMatch[1])
+				for (const prefix of this.getInterfaceSubnetPrefixes(address)) addPrefix(prefix)
 			}
 		}
 
 		return prefixes
+	}
+
+	// Deriving a single prefix from the interface address assumes a /24. Wider
+	// networks span several /24 blocks and the device can sit in any of them, so
+	// walk the netmask instead.
+	getInterfaceSubnetPrefixes(address) {
+		const ip = this.parseIPv4(address?.address)
+		const mask = this.parseIPv4(address?.netmask)
+		if (ip === undefined || mask === undefined) return []
+
+		const hostBits = (~mask >>> 0) + 1
+		const blocks = Math.max(1, Math.min(MAX_SCAN_SUBNETS, Math.floor(hostBits / 256) || 1))
+		const network = (ip & mask) >>> 0
+		const prefixes = []
+
+		for (let block = 0; block < blocks; block++) {
+			const start = (network + block * 256) >>> 0
+			prefixes.push(`${(start >>> 24) & 255}.${(start >>> 16) & 255}.${(start >>> 8) & 255}.`)
+		}
+
+		return prefixes
+	}
+
+	parseIPv4(value) {
+		const parts = String(value ?? '').split('.')
+		if (parts.length !== 4) return undefined
+
+		let result = 0
+		for (const part of parts) {
+			const octet = Number(part)
+			if (!/^\d{1,3}$/.test(part) || !Number.isInteger(octet) || octet > 255) return undefined
+			result = ((result << 8) | octet) >>> 0
+		}
+
+		return result
 	}
 
 	getBonjourHost(device) {
