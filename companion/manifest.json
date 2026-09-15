@@ -7,12 +7,12 @@
 	"description": "Control WiiM streamers and amplifiers using the built-in HTTP API",
 	"version": "1.5.1",
 	"license": "MIT",
-	"repository": "git+https://github.com/local/companion-module-wiim-http.git",
-	"bugs": "https://github.com/local/companion-module-wiim-http/issues",
+	"repository": "git+https://github.com/houtacheng/companion-module-wiim-http.git",
+	"bugs": "https://github.com/houtacheng/companion-module-wiim-http/issues",
 	"maintainers": [
 		{
-			"name": "Local module",
-			"email": "local@example.com"
+			"name": "houtacheng",
+			"email": "houtacheng@gmail.com"
 		}
 	],
 	"runtime": {

@@ -141,7 +141,7 @@ class ModuleInstance extends InstanceBase {
 				label: 'Subnet Scan Prefix',
 				width: 4,
 				default: '',
-				tooltip: 'Optional. Leave blank to scan local IPv4 /24 networks, or enter a prefix such as 10.43.50.',
+				tooltip: 'Optional. Leave blank to scan local IPv4 /24 networks, or enter a prefix such as 192.168.1.',
 			},
 			{
 				type: 'textinput',

@@ -2,7 +2,7 @@
 
 Controls WiiM products using the local HTTP API.
 
-Configure the module by selecting a discovered WiiM device when Bonjour/mDNS discovery is available. This lets Companion keep working when DHCP changes the WiiM IP address. If Bonjour discovery is unavailable, enable `Auto Find WiiM by Subnet Scan`. You can leave `Subnet Scan Prefix` blank to scan the local IPv4 networks automatically, or set a prefix such as `10.43.50.`. Networks wider than a /24 are covered by scanning each /24 block the interface spans, up to four blocks. A failed scan is not retried for 60 seconds. Optionally set `Target Name / MAC / UUID` to identify one specific WiiM. Newer firmware may require HTTPS with a self-signed certificate; discovery probes HTTPS first and then falls back to HTTP. Leave Protocol set to `Auto` unless you know the device only supports one protocol.
+Configure the module by selecting a discovered WiiM device when Bonjour/mDNS discovery is available. This lets Companion keep working when DHCP changes the WiiM IP address. If Bonjour discovery is unavailable, enable `Auto Find WiiM by Subnet Scan`. You can leave `Subnet Scan Prefix` blank to scan the local IPv4 networks automatically, or set a prefix such as `192.168.1.`. Networks wider than a /24 are covered by scanning each /24 block the interface spans, up to four blocks. A failed scan is not retried for 60 seconds. Optionally set `Target Name / MAC / UUID` to identify one specific WiiM. Newer firmware may require HTTPS with a self-signed certificate; discovery probes HTTPS first and then falls back to HTTP. Leave Protocol set to `Auto` unless you know the device only supports one protocol.
 
 ## Included controls
 
@@ -74,7 +74,7 @@ Companion cannot open a native SMB file picker inside a module. For browsing fil
 Example:
 
 ```text
-http://10.43.50.57:8000/
+http://192.168.1.50:8000/
 ```
 
 The module scans directory listings and adds files to `Media Library: Play File`.
