@@ -248,6 +248,24 @@ header { display: flex; flex-direction: column; gap: 18px; }
   color: var(--ink-faint);
 }
 
+/* Five figures never fill a 2-, 3- or 4-column grid, and the leftover cells
+   read as grey blanks. Below the point where all five fit on one line, fall
+   back to the same label/value rows used elsewhere on the page. */
+@media (max-width: 700px) {
+  .specs { grid-template-columns: 1fr; gap: 0; background: var(--ground); }
+  .spec {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .spec:not(:first-child) { padding-left: 0; }
+  .spec:last-child { border-bottom: none; }
+  .stat-n { font-size: 1.5rem; }
+}
+
 /* ---- sections ---- */
 section { margin-block: clamp(42px, 7vw, 68px); }
 .sec-head { display: flex; flex-direction: column; gap: 9px; margin-bottom: 26px; }
