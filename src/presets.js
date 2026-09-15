@@ -84,6 +84,12 @@ function inputFeedback(input) {
 }
 
 export default function (self) {
+	// Companion has no "this connection" placeholder for preset text: a literal
+	// this: scope is left verbatim on the button and renders as $NA. Reference the
+	// connection by its current label instead; configUpdated re-runs this after a
+	// rename.
+	const variable = (name) => `$(${self.label}:${name})`
+
 	const presets = {
 		play: simplePreset('Play', 'PLAY', 'play', {}, [playbackFeedback('play', COLORS.green)], ['transport']),
 		pause: simplePreset(
@@ -112,7 +118,7 @@ export default function (self) {
 			type: 'simple',
 			name: 'Encoder: Volume / Mute',
 			keywords: ['encoder', 'volume', 'mute', 'rotary'],
-			style: style('ENC VOL\n$(this:volume)', COLORS.gray, COLORS.white, '14'),
+			style: style(`ENC VOL\n${variable('volume')}`, COLORS.gray, COLORS.white, '14'),
 			steps: encoderStep(
 				[action('mute_toggle')],
 				[action('volume_down', { step: 2 })],
@@ -127,7 +133,7 @@ export default function (self) {
 			type: 'simple',
 			name: 'Cycle Repeat / Shuffle',
 			keywords: ['repeat', 'shuffle', 'loop', 'cycle'],
-			style: style('$(this:loop_mode_text)', COLORS.gray, COLORS.white, '18'),
+			style: style(variable('loop_mode_text'), COLORS.gray, COLORS.white, '18'),
 			steps: press('repeat_cycle'),
 			feedbacks: [
 				loopFeedback('1', COLORS.blue),
@@ -167,7 +173,7 @@ export default function (self) {
 			type: 'simple',
 			name: 'Encoder: Select Input Source',
 			keywords: ['encoder', 'source', 'input', 'rotary'],
-			style: style('ENC SRC\n$(this:selected_source)', COLORS.gray, COLORS.white, '12'),
+			style: style(`ENC SRC\n${variable('selected_source')}`, COLORS.gray, COLORS.white, '12'),
 			steps: encoderStep([], [action('switch_source_previous')], [action('switch_source_next')]),
 			feedbacks: [
 				inputFeedback('wifi'),
@@ -189,7 +195,7 @@ export default function (self) {
 			type: 'simple',
 			name: 'Encoder: Select / Play Media File',
 			keywords: ['encoder', 'media', 'file', 'music', 'rotary'],
-			style: style('MUSIC\n$(this:selected_media_file)', COLORS.dark, COLORS.white, '11'),
+			style: style(`MUSIC\n${variable('selected_media_file')}`, COLORS.dark, COLORS.white, '11'),
 			steps: encoderStep(
 				[action('play_selected_media_file')],
 				[action('select_media_previous')],
@@ -201,7 +207,7 @@ export default function (self) {
 			type: 'simple',
 			name: 'Now Playing',
 			keywords: ['metadata', 'song', 'track'],
-			style: style('$(this:now_playing)', COLORS.dark, COLORS.white, '18'),
+			style: style(variable('now_playing'), COLORS.dark, COLORS.white, '18'),
 			steps: press('refresh_status'),
 			feedbacks: [
 				playbackFeedback('play', COLORS.green),

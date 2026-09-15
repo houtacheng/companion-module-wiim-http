@@ -39,6 +39,10 @@ Some documented endpoints are powerful device/account/network operations such as
 
 Presets are included for playback, volume, repeat/shuffle, sources, preset recall, and now playing.
 
+Preset button text references this connection by its label, for example
+`$(WiiM:now_playing)`. If you rename the connection, re-add the presets or update
+the label in any button text you have already placed.
+
 Encoder presets are included:
 
 - `Encoder: Volume / Mute`: rotate left/right for volume down/up, press to toggle mute.
